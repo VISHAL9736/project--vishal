@@ -1,0 +1,70 @@
+# Custom values for OLake Helm Chart
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+  hosts:
+    - host: olake.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+service:
+  type: NodePort
+  port: 8000
+  targetPort: 8000
+  nodePort: 30800
+
+resources:
+  limits:
+    cpu: 2000m
+    memory: 4Gi
+  requests:
+    cpu: 500m
+    memory: 1Gi
+
+persistence:
+  enabled: true
+  storageClassName: standard
+  accessMode: ReadWriteOnce
+  size: 10Gi
+
+replicaCount: 1
+
+env:
+  - name: OLAKE_ENV
+    value: "production"
+  - name: LOG_LEVEL
+    value: "info"
+
+livenessProbe:
+  enabled: true
+  httpGet:
+    path: /health
+    port: 8000
+  initialDelaySeconds: 60
+  periodSeconds: 10
+
+readinessProbe:
+  enabled: true
+  httpGet:
+    path: /ready
+    port: 8000
+  initialDelaySeconds: 30
+  periodSeconds: 10
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+serviceAccount:
+  create: true
+  name: ""
+
+autoscaling:
+  enabled: false
